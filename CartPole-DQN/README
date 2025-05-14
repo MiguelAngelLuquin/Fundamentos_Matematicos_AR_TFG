@@ -1,0 +1,32 @@
+Esta carpeta incluye todos los programas necesarios para el entrenamiento y prueba del
+algoritmo de Deep Q learning para el balanceamiento de un palo. La estructura es la siguiente:
+
+CartPole-DQN/
+│
+├── checkpoints/          # Carpeta para guardar los modelos entrenados para cada 50 iteraciones
+├── agent.py              # Clase que define al agente DQN
+├── dqn_model.pth         # Modelo pre-entrenado, si se ejecuta "train.py" se sobreescribe
+├── environment.py        # Clase para gestionar el entorno Gym
+├── model.py              # Clase para definir la red neuronal (modelo Q)
+├── play.py               # Script para probar el modelo entrenado
+├── README
+├── replay_buffer.py      # Clase para implementar el Replay Buffer
+└── train.py              # Script para entrenar el modelo
+
+Si no se tienen instalados los paquetes Gymnasium y Pytorch, se pueden instalar con los siguientes comandos:
+
+pip install gymnasium
+pip install torch
+
+Para la correcta ejecución de los scripts, primero tenemos que entrenar el modelo ejecutando
+el script "train.py". Una vez que el modelo ha sido entrenado, podemos probarlo ejecutando el
+script "play.py". Este mostrará la animación del palo balanceándose en la ventana de visualización.
+Se detiene automáticamente después de 500 "frames", sí el palo cae o si se sale el carro de los límites.
+
+Al ejecutar "train.py", en la terminal podemos ver el progreso del entrenamiento, mostrando el número de iteración,
+la recompensa acumulada, el promedio de recompensa de los últimos 100 episodios y el tiempo transcurrido. Y se detiene
+cuando llega a 300 episodios o si la recompensa media supera los 350 puntos (se considera que el modelo ha sido entrenado
+exitosamente).
+
+Ejecutando el script "train.py" se guardará el modelo entrenado en la carpeta "checkpoints" cada 50 iteraciones. Esto se
+hace para hacer un estudio de la evolución del modelo en el tiempo.
