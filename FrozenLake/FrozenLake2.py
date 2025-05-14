@@ -13,7 +13,7 @@ class FrozenLakeQLearning:
         self.alpha = alpha   # Tasa de aprendizaje
             
         self.epsilon = 1.0 # Tasa de exploración inicial
-        self.epsilon_decay = 0.99
+        self.epsilon_decay = 0.999
         self.min_epsilon = 0
 
     def get_reward(self, state):
@@ -86,23 +86,15 @@ class FrozenLakeQLearning:
             self.epsilon = self.epsilon * self.epsilon_decay
 
     def get_optimal_path(self):
-        path = [(0, 0)]
-        state = (0, 0)
-        count = 0
-        while state != (2, 2) and count < self.grid_size**2:
-            x, y = state
-            action_idx = np.argmax(self.q_table[x, y])
-            action = self.actions[action_idx]
-            
-            next_state, _, _ = self.step(state, action, 1)
-            path.append(next_state)
-            state = next_state
-            
-            if len(path) > self.grid_size**2:  # Prevenir loops
-                break
-            count += 1
-        if(path[2] == (1,1) and path[4] == (2,2)):
-            return 1
+        if (np.argmax(self.q_table[0, 0]) == 0 or np.argmax(self.q_table[0, 0]) == 3):
+            if (np.argmax(self.q_table[0, 1]) == 3):
+                if (np.argmax(self.q_table[1, 0]) == 0):    
+                    if (np.argmax(self.q_table[0, 2]) == 3):
+                        if (np.argmax(self.q_table[1, 1]) == 0 or np.argmax(self.q_table[1, 1]) == 3):
+                            if (np.argmax(self.q_table[2, 0]) == 0):
+                                if (np.argmax(self.q_table[1, 2]) == 3):
+                                    if (np.argmax(self.q_table[2, 1]) == 0):
+                                        return 1 #Se encontró una política óptima para todo estado
         return 0
     
     def print_qtable_as_table(self):
@@ -124,11 +116,11 @@ class FrozenLakeQLearning:
 
 
 if __name__ == "__main__":
-    entrenamientos = 100
-    episodios = list(range(10, 201, 10))
+    entrenamientos = 25
+    episodios = list(range(50, 1001, 25))
     resultados = []
-    alphas = np.linspace(0.01, 1, 100)  # Valores de alpha para cada agente
-    for j in range(1,101):
+    alphas = np.arange(0.01, 0.31, 0.01)  # Valores de alpha para cada agente
+    for j in range(1,31):
         print(f"Entrenando agente {j}...")
         for k in episodios:
             count = 0
@@ -147,8 +139,20 @@ if __name__ == "__main__":
 
     # Ahora graficamos
     plt.figure(figsize=(10, 6))
-    plt.plot(alphas,resultados, marker='o')
+    plt.plot(alphas, resultados, marker='o', label='Datos originales')
 
+    # Ajuste polinómico (por ejemplo, un polinomio de grado 3)
+    coef = np.polyfit(alphas, resultados, 3)
+    polinomio = np.poly1d(coef)
+
+    # Generar valores suavizados para el polinomio
+    alpha_suavizado = np.linspace(min(alphas), max(alphas), 100)  # Más puntos para suavizar
+    resultados_suavizados = polinomio(alpha_suavizado)
+
+    # Graficar la línea de suavizado
+    plt.plot(alpha_suavizado, resultados_suavizados, label='Curva de suavizado (Polinomio)', color='red', linewidth=2)
+
+    # Personalizar la gráfica
     plt.title("Convergencia según factor de aprendizaje")
     plt.xlabel("Factor de aprendizaje (alpha)")
     plt.ylabel("Episodios para convergencia")

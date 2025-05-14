@@ -11,20 +11,21 @@ class FrozenLakeQLearning:
         # Hiperparámetros dependientes del agente
         self.agent = agent
         if agent == 1:
-            self.gamma = 0.5   # Factor de descuento
+            self.gamma = 0.25   # Factor de descuento
             self.alpha = 0.9   # Tasa de aprendizaje
         elif agent == 2:
             self.gamma = 0.95   # Factor de descuento
-            self.alpha = 0.25   # Tasa de aprendizaje
+            self.alpha = 0.1   # Tasa de aprendizaje
         elif agent == 3:
-            self.gamma = 0.5   # Factor de descuento
-            self.alpha = 1   # Tasa de aprendizaje
+            self.gamma = 0.25   # Factor de descuento
+            self.alpha = 0.1   # Tasa de aprendizaje
         else:
             self.gamma = 0.95   # Factor de descuento
-            self.alpha = 1   # Tasa de aprendizaje
+            self.alpha = 0.1   # Tasa de aprendizaje
             
         self.epsilon = 1.0 # Tasa de exploración inicial
-        self.epsilon_decay = 0.99
+        self.epsilon_decay = 0.999
+        self.alphastart = self.alpha
 
     def get_reward(self, state):
         x, y = state
@@ -67,7 +68,7 @@ class FrozenLakeQLearning:
             return self.actions[np.argmax(self.q_table[x, y])]
 
     def train(self, episodes=100):
-        for _ in range(episodes):
+        for i in range(episodes):
             state = (0, 0)
             done = False
             
@@ -97,26 +98,18 @@ class FrozenLakeQLearning:
 
             # Si usa decaimineto de factor de aprendizaje:
             if(self.agent == 3 or self.agent == 4):
-                self.alpha -= 1/episodes
+                self.alpha = self.alphastart * (1 - i / episodes)
 
     def get_optimal_path(self):
-        path = [(0, 0)]
-        state = (0, 0)
-        count = 0
-        while state != (2, 2) and count < self.grid_size**2:
-            x, y = state
-            action_idx = np.argmax(self.q_table[x, y])
-            action = self.actions[action_idx]
-            
-            next_state, _, _ = self.step(state, action, 1)
-            path.append(next_state)
-            state = next_state
-            
-            if len(path) > self.grid_size**2:  # Prevenir loops
-                break
-            count += 1
-        if(path[2] == (1,1) and path[4] == (2,2)):
-            return 1
+        if (np.argmax(self.q_table[0, 0]) == 0 or np.argmax(self.q_table[0, 0]) == 3):
+            if (np.argmax(self.q_table[0, 1]) == 3):
+                if (np.argmax(self.q_table[1, 0]) == 0):    
+                    if (np.argmax(self.q_table[0, 2]) == 3):
+                        if (np.argmax(self.q_table[1, 1]) == 0 or np.argmax(self.q_table[1, 1]) == 3):
+                            if (np.argmax(self.q_table[2, 0]) == 0):
+                                if (np.argmax(self.q_table[1, 2]) == 3):
+                                    if (np.argmax(self.q_table[2, 1]) == 0):
+                                        return 1 #Se encontró una política óptima para todo estado
         return 0
     
     def print_qtable_as_table(self):
@@ -139,7 +132,7 @@ class FrozenLakeQLearning:
 
 if __name__ == "__main__":
     entrenamientos = 100
-    episodios = list(range(10, 201, 10))
+    episodios = list(range(100, 1001, 100))
 
     resultados = {j: [] for j in range(1, 5)}  # Diccionario para guardar porcentajes por agente
 
@@ -152,10 +145,10 @@ if __name__ == "__main__":
                 lake.train(episodes=k)
                 count += lake.get_optimal_path()
                 #if i == entrenamientos - 1:
-                 #   lake.print_qtable_as_table()
+                #    lake.print_qtable_as_table()
             porcentaje = 100 * count / entrenamientos
             resultados[j].append(porcentaje)
-            print(f"Agente {j} con {k} episodios encontró el camino óptimo el {porcentaje:.2f}% de las veces.")
+            print(f"Agente {j} con {k} episodios encontró la política óptima el {porcentaje:.2f}% de las veces.")
     
     print("Entrenamiento completo.")
 
