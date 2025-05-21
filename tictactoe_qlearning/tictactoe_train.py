@@ -1,12 +1,12 @@
 #################################################################################
 # Autor: Miguel Ángel Luquín Guerrero
 # Fecha de creación: 23/01/2025
-# Última modificación: 25/01/2025
+# Última modificación: 19/05/2025
 # Versión: 3.0
 # Descripción: Programa que entrena a la máquina a jugar al 3 en raya
 #              usando el algoritmo Q-Learning contra sí mismo. En esta 
 #              versión se ha añadido la posibilidad de guardar la tabla 
-#              Q en un .csv para poder usarla en el programa play_tictactoe.py
+#              Q en un .csv para poder usarla en el programa "play_tictactoe.py"
 #################################################################################
 
 import numpy as np
@@ -57,7 +57,9 @@ def q_learning(episodes=EPISODES, alpha=0.1, gamma=0.95):
     wins = 0
     draws = 0
     losses = 0
-
+    alpha_ini = alpha
+    epsilon_decay = 0.9999
+    epsilon = 1.0
     #numero de episodios
     for episode in range(episodes):
         if episode%5000 == 0:
@@ -70,7 +72,8 @@ def q_learning(episodes=EPISODES, alpha=0.1, gamma=0.95):
         reward = 0
 
         # Factor de exploración que va decreciendo con los episodios
-        epsilon = max(0.2, 1 - episode/episodes) 
+        epsilon *= epsilon_decay
+        alpha = alpha_ini * (1 - episode / episodes)
 
         # En el principio de cada episodio, el agente comienza con todas las posibilidades de acción
         ACTIONS = [1,2,3,4,5,6,7,8,9]
@@ -178,8 +181,7 @@ def guardar_tabla(tabla):
         escritor = csv.writer(archivo)
         escritor.writerows(tabla)
 
-
-#---INICIO DE PROGRAMA---#
+#---INICIO DE PROGRAMA PRINCIPAL---#
 
 #Ejecución del algoritmo Q-Learning
 q_table, wins, draws, loses = q_learning()
