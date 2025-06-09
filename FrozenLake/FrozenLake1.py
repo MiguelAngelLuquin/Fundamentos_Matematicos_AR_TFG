@@ -134,7 +134,10 @@ if __name__ == "__main__":
     entrenamientos = 100
     episodios = list(range(100, 1001, 100))
 
-    resultados = {j: [] for j in range(1, 5)}  # Diccionario para guardar porcentajes por agente
+    resultados = {j: [] for j in range(1, 5)}  # Porcentajes de éxito
+    errores = {j: [] for j in range(1, 5)}     # Intervalos de error (para errorbars)
+
+    z = 1.96  # Para un 95% de confianza
 
     for j in range(1, 5):
         print(f"\nEntrenando agente {j}...")
@@ -144,18 +147,34 @@ if __name__ == "__main__":
                 lake = FrozenLakeQLearning(agent=j)
                 lake.train(episodes=k)
                 count += lake.get_optimal_path()
-                #if i == entrenamientos - 1:
-                #    lake.print_qtable_as_table()
-            porcentaje = 100 * count / entrenamientos
+            p = count / entrenamientos
+            porcentaje = 100 * p
             resultados[j].append(porcentaje)
-            print(f"Agente {j} con {k} episodios encontró la política óptima el {porcentaje:.2f}% de las veces.")
-    
-    print("Entrenamiento completo.")
 
-    # Ahora graficamos
+            # Cálculo del intervalo de confianza de Wald
+            error = z * 100 * np.sqrt(p * (1 - p) / entrenamientos)
+            errores[j].append(error)
+
+            print(f"Agente {j} con {k} episodios: {porcentaje:.2f}% ± {error:.2f}%")
+
+    print("Entrenamiento completo.")
+    # Colores y estilos consistentes
+    colors = ['blue', 'orange', 'green', 'red']
+    labels = [f"Agente {j}" for j in range(1, 5)]
+
     plt.figure(figsize=(10, 6))
-    for j in range(1, 5):
-        plt.plot(episodios, resultados[j], marker='o', label=f"Agente {j}")
+
+    for idx, j in enumerate(range(1, 5)):
+        y = resultados[j]
+        err = errores[j]
+        y = np.array(y)
+        err = np.array(err)
+
+        # Línea principal
+        plt.plot(episodios, y, label=labels[idx], color=colors[idx], marker='o')
+
+        # Intervalo de confianza como superficie
+        plt.fill_between(episodios, y - err, y + err, color=colors[idx], alpha=0.2)
 
     plt.title("Porcentaje de éxito vs Número de episodios")
     plt.xlabel("Número de episodios")
